@@ -6,6 +6,9 @@ const router = Router()
 router.post("/register" , register);
 router.post("/login" , login)
 // protected routers it's going to be dashboard
+router.get("/me", protect, (req, res) => {
+  res.json(req.user)
+})
 router.get("/dashboard" , protect, getDashboard)
 
 export default router
