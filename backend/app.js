@@ -1,22 +1,23 @@
 import express from "express"
 import router from "./routes/auth.routes.js"
+
+import rateLimit from "express-rate-limit"
+
+import cors from "cors"
 const app = express()
 
 app.use(express.json())
-app.use((err, req,res, next) => {
-    res.status(err.statusCode || 500).json({
-    success:false,
-    message: err.message || "Something went wrong"
-  })
-})
-
-// 404 handler
-app.use((req, res, next) => {
-  res.status(404).json({ success: false, message: "Route not found" });
-});
+app.use(cors({ origin: 'http://localhost:5173', credentials:true }))
 
 // routes
+app.use("/api/auth", router)
 
-app.use("/api/auth" ,router)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message:"Too many requests, try again later"
+})
+
+app.use(limiter)
 
 export default app

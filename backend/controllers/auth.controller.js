@@ -47,8 +47,6 @@ export const register = async (req, res,next) => {
 // login controller
 export const login = async (req, res,next) => {
     try {
-        
-    
     const { email, password} = req.body;
     if(!email || !password) {
         throw new AppError("Please Enter all fields", 400) 
@@ -78,6 +76,14 @@ export const login = async (req, res,next) => {
     }
 }
 
+// logout
+
+export const logout = async (req, res) => {
+  res.status(200).json({
+    success:true,
+    message:"Logged out successfully"
+  })
+}
 
 // protected dashboard
 export const getDashboard = async (req, res,next) => {
