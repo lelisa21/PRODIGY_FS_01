@@ -1,131 +1,138 @@
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 import User from "../models/user.model.js";
 import AppError from "../utils/appError.js";
-import bcrypt from "bcrypt";
 
-class UserService {
-  // Create new user
-  async createUser(userData) {
-    const { username, email, password } = userData;
-    
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      throw new AppError("User already exists", 400);
+class AuthService {
+    constructor() {
+        // In production, use Redis for refresh tokens
+        this.refreshTokens = new Map();
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    
-    const user = await User.create({
-      username,
-      email,
-      password: hashedPassword,
-      role: 'user' // default role
-    });
+    // Generate tokens
+    generateTokens(userId, role) {
+        const accessToken = jwt.sign(
+            { id: userId, role },
+            process.env.ACCESS_TOKEN_SECRET,
+            { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '15m' }
+        );
 
-    return this.sanitizeUser(user);
-  }
+        const refreshToken = jwt.sign(
+            { id: userId },
+            process.env.REFRESH_TOKEN_SECRET,
+            { expiresIn: process.env.REFRESH_TOKEN_EXPIRY || '7d' }
+        );
 
-  // Find user by email
-  async findByEmail(email) {
-    return await User.findOne({ email });
-  }
+        // Store refresh token
+        this.refreshTokens.set(refreshToken, {
+            userId,
+            role,
+            expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
 
-  // Find user by ID
-  async findById(id) {
-    return await User.findById(id);
-  }
-
-  // Update user
-  async updateUser(id, updateData) {
-    // Remove sensitive fields
-    delete updateData.password;
-    delete updateData.role;
-    
-    const user = await User.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true, runValidators: true }
-    );
-    
-    return this.sanitizeUser(user);
-  }
-
-  // Get all users (admin only)
-  async getAllUsers(page = 1, limit = 10) {
-    const skip = (page - 1) * limit;
-    
-    const users = await User.find()
-      .select('-password')
-      .skip(skip)
-      .limit(limit)
-      .sort('-createdAt');
-
-    const total = await User.countDocuments();
-
-    return {
-      users,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit)
-      }
-    };
-  }
-
-  // Delete user (admin only)
-  async deleteUser(id) {
-    const user = await User.findByIdAndDelete(id);
-    if (!user) {
-      throw new AppError("User not found", 404);
-    }
-    return { message: "User deleted successfully" };
-  }
-
-  // Change user role (admin only)
-  async changeUserRole(id, newRole) {
-    if (!['user', 'admin'].includes(newRole)) {
-      throw new AppError("Invalid role", 400);
+        return { accessToken, refreshToken };
     }
 
-    const user = await User.findByIdAndUpdate(
-      id,
-      { role: newRole },
-      { new: true }
-    ).select('-password');
+    // Register new user
+    async register(userData) {
+        const { username, email, password } = userData;
+        
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            throw new AppError("User already exists", 400);
+        }
 
-    if (!user) {
-      throw new AppError("User not found", 404);
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        const user = await User.create({
+            username,
+            email,
+            password: hashedPassword,
+            role: 'user',
+            isActive: true
+        });
+
+        const tokens = this.generateTokens(user._id, user.role);
+        
+        const userObject = user.toObject();
+        delete userObject.password;
+
+        return {
+            user: userObject,
+            ...tokens
+        };
     }
 
-    return user;
-  }
+    // Login user
+    async login(email, password) {
+        const user = await User.findOne({ email }).select('+password');
+        
+        if (!user) {
+            throw new AppError("Invalid credentials", 401);
+        }
 
-  // Sanitize user (remove sensitive data)
-  sanitizeUser(user) {
-    const sanitized = user.toObject();
-    delete sanitized.password;
-    delete sanitized.__v;
-    return sanitized;
-  }
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            throw new AppError("Invalid credentials", 401);
+        }
 
-  // Update password
-  async updatePassword(userId, currentPassword, newPassword) {
-    const user = await User.findById(userId);
-    if (!user) {
-      throw new AppError("User not found", 404);
+        if (!user.isActive) {
+            throw new AppError("Account is deactivated. Please contact support", 403);
+        }
+
+        // Update last login
+        user.lastLogin = new Date();
+        await user.save();
+
+        const tokens = this.generateTokens(user._id, user.role);
+        
+        const userObject = user.toObject();
+        delete userObject.password;
+
+        return {
+            user: userObject,
+            ...tokens
+        };
     }
 
-    const isMatch = await bcrypt.compare(currentPassword, user.password);
-    if (!isMatch) {
-      throw new AppError("Current password is incorrect", 401);
+    // Refresh access token
+    async refreshAccessToken(refreshToken) {
+        const tokenData = this.refreshTokens.get(refreshToken);
+        
+        if (!tokenData) {
+            throw new AppError("Invalid refresh token", 401);
+        }
+
+        if (tokenData.expiresAt < Date.now()) {
+            this.refreshTokens.delete(refreshToken);
+            throw new AppError("Refresh token expired", 401);
+        }
+
+        try {
+            const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+            
+            const user = await User.findById(decoded.id);
+            
+            if (!user || !user.isActive) {
+                throw new AppError("User not found or inactive", 401);
+            }
+
+            const newTokens = this.generateTokens(user._id, user.role);
+            
+            this.refreshTokens.delete(refreshToken);
+
+            return newTokens;
+        } catch (error) {
+            this.refreshTokens.delete(refreshToken);
+            throw new AppError("Invalid refresh token", 401);
+        }
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    user.password = hashedPassword;
-    await user.save();
-
-    return { message: "Password updated successfully" };
-  }
+    // Logout
+    async logout(refreshToken) {
+        this.refreshTokens.delete(refreshToken);
+        return { message: "Logged out successfully" };
+    }
 }
 
-export default new UserService();
+export default new AuthService();

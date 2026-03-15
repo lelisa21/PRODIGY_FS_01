@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken"
 import User from "../models/user.model.js"
 import AppError from "../utils/appError.js"
 
- const protect = async (req, res, next) => {
+ export const protect = async (req, res, next) => {
     try {
     let token;
    if(req.headers.authorization && req.headers.authorization.startsWith("Bearer"))
@@ -19,4 +19,3 @@ import AppError from "../utils/appError.js"
     return next(new AppError("Token invalid or expired", 401))
   }
 }
-export default protect

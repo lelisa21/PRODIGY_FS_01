@@ -1,104 +1,105 @@
-import User from "../models/user.model.js"
-import bcrypt from "bcrypt"
-import jwt from "jsonwebtoken"
-import AppError from "../utils/appError.js"
+import AuthService from "../services/auth.service.js";
+import UserService from "../services/user.service.js";
+import AppError from "../utils/appError.js";
 
-// to generate token
-const generateToken = (id) => {
-    return jwt.sign({id} , process.env.SECRET_KEY, {expiresIn: "14d"})
-}
-
-// register controller
-export const register = async (req, res,next) => {
+// Register
+export const register = async (req, res, next) => {
     try {
-    const {username, email, password} = req.body;
-    if(!username || !email || !password) {
-        throw new AppError("Please Enter all fields", 400)
-    }
-  
-    const user = await User.findOne({email})
-    if(user){
-        throw new AppError("User already Exist" , 400)
-    }
-  
-    const hashedPassword = await bcrypt.hash(password, 10)
+        const { username, email, password } = req.body;
 
-    const createUser = await User.create({
-        username,
-        email,
-        password:hashedPassword
-    })
-    const token = generateToken(createUser._id)
-    res.status(201).json({
-        success:true,  
-        token,
-        data:{
-            id:createUser._id,
-            username:createUser.username,
-            email:createUser.email,
-          
+        if (!username || !email || !password) {
+            throw new AppError("Please enter all fields", 400);
         }
-    })
-    } catch (error) {
-        next(error)
-      }
-}
 
-// login controller
-export const login = async (req, res,next) => {
+        const result = await AuthService.register({ username, email, password });
+
+        // Set refresh token in HTTP-only cookie
+        res.cookie('refreshToken', result.refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
+        res.status(201).json({
+            success: true,
+            accessToken: result.accessToken,
+            data: result.user
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Login
+export const login = async (req, res, next) => {
     try {
-    const { email, password} = req.body;
-    if(!email || !password) {
-        throw new AppError("Please Enter all fields", 400) 
-    }
+        const { email, password } = req.body;
 
-    const user = await User.findOne({email})
-    if(!user){
-        throw new AppError("User not Exist", 404)
-    }
-   const isMatch  = await bcrypt.compare(password, user.password)
-    if(!isMatch){
-        throw new AppError("invalid Credential" , 401)  
-    }
-    const token = generateToken(user._id)
-    res.status(200).json({
-        success:true,  
-        token,
-        data:{
-            id:user._id,
-            username:user.username,
-            email:user.email,
+        if (!email || !password) {
+            throw new AppError("Please enter all fields", 400);
         }
-    })
 
+        const result = await AuthService.login(email, password);
+
+        // Set refresh token in HTTP-only cookie
+        res.cookie('refreshToken', result.refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+
+        res.status(200).json({
+            success: true,
+            accessToken: result.accessToken,
+            data: result.user
+        });
     } catch (error) {
-       next(error)
+        next(error);
     }
-}
+};
 
-// logout
+// Logout
+export const logout = async (req, res, next) => {
+    try {
+        const refreshToken = req.cookies.refreshToken;
+        
+        if (refreshToken) {
+            await AuthService.logout(refreshToken);
+        }
 
-export const logout = async (req, res) => {
-  res.status(200).json({
-    success:true,
-    message:"Logged out successfully"
-  })
-}
+        res.clearCookie('refreshToken', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict'
+        });
 
-// protected dashboard
-export const getDashboard = async (req, res,next) => {
-try{
-  const  user = req.user
- res.status(200).json({
-    success:true,
-    message:`Welcome ${user.username}`,
-    data:{
-       username:user.username,
-       email:user.email
-    } 
- })
+        res.status(200).json({
+            success: true,
+            message: "Logged out successfully"
+        });
+    } catch (error) {
+        next(error);
+    }
+};
 
-}catch(error){
-  next(error)
- }
-}
+// Protected dashboard
+export const getDashboard = async (req, res, next) => {
+    try {
+        const user = req.user;
+        res.status(200).json({
+            success: true,
+            message: `Welcome ${user.username}`,
+            data: {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+                role: user.role,
+                createdAt: user.createdAt
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
