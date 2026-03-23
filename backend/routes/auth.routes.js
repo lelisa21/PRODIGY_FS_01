@@ -3,7 +3,8 @@ import {
     register, 
     login, 
     logout, 
-    getDashboard 
+    getDashboard, 
+    getCurrentUser
 } from "../controllers/auth.controller.js";
 import { protect } from "../middleware/auth.middleware.js";
 
@@ -15,6 +16,7 @@ router.post("/login", login);
 router.post("/logout", logout);
 
 // Protected routes
+router.get("/me" , protect, getCurrentUser)
 router.get("/dashboard", protect, getDashboard);
 
 export default router;
