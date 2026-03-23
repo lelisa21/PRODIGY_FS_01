@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
+        required:[true, "username is required"],
         minLength: 3,
         trim: true
     },

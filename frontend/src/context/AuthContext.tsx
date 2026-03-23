@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '@/api/authApi';
 import { User, AuthContextType } from '@/types/user';
@@ -52,7 +52,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.success(`Welcome back, ${userData.username}!`);
       return true;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Login failed';
+      const message = err.response?.data?.message || 'Login failed please try with correct email and  password';
       setError(message);
       toast.error(message);
       return false;
@@ -71,7 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       navigate('/login');
       return true;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Registration failed';
+      const message = err.response?.data?.message || 'Registration failed please inter valid  username, email and password';
       setError(message);
       toast.error(message);
       return false;
@@ -120,10 +120,3 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};

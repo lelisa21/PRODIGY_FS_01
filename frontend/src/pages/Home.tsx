@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Shield, Zap, Users, Lock, Award, TrendingUp, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 const features = [
   {
@@ -51,7 +51,7 @@ const Home: React.FC = () => {
           transition={{ duration: 0.6 }}
           className="text-center"
         >
-          <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6">
+          <h1 className="text-5xl md:text-7xl font-extrabold text-white/25 mb-6">
             Secure Authentication
             <span className="block text-primary-900">Made Simple</span>
           </h1>
@@ -68,7 +68,7 @@ const Home: React.FC = () => {
                 </Button>
               </Link>
               <Link to="/login">
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+                <Button size="lg" variant="outline" className="border-white bg-amber-400 hover:bg-amber/20">
                   Sign In
                 </Button>
               </Link>

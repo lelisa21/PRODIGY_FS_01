@@ -9,7 +9,7 @@ import AppError from "../utils/appError.js"
     token = req.headers.authorization.split(" ")[1]
     if(!token) return next(new AppError("token not exist or expired" , 401))
 
-    const decoded = jwt.verify(token, process.env.SECRET_KEY)
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
     const user = await User.findById(decoded.id)
     if(!user)
         throw new AppError("user not found" , 404)
