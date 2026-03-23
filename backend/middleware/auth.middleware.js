@@ -19,3 +19,5 @@ import AppError from "../utils/appError.js"
     return next(new AppError("Token invalid or expired", 401))
   }
 }
+
+export default protect

@@ -1,99 +1,68 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import { useAuth } from './hooks/useAuth';
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import type { JSX } from 'react/jsx-runtime';
+import  { lazy, Suspense } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from '@/context/AuthContext';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { Navbar } from '@/components/layout/Navbar';
+import { LoadingSpinner } from '@/components/layout/LoadingSpiner';
 
-// Protected Route Component
-const ProtectedRoute = ({ children, allowedRoles = ['user', 'admin'] }: { 
-    children: JSX.Element; 
-    allowedRoles?: string[] 
-}) => {
-    const { user, loading } = useAuth();
-
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-            </div>
-        );
-    }
-
-    if (!user) {
-        return <Navigate to="/login" />;
-    }
-
-    if (!allowedRoles.includes(user.role)) {
-        return <Navigate to="/dashboard" />;
-    }
-
-    return children;
-};
-
-// Public Route Component
-const PublicRoute = ({ children }: { children: JSX.Element }) => {
-    const { user, loading } = useAuth();
-
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-            </div>
-        );
-    }
-
-    if (user) {
-        return <Navigate to="/dashboard" />;
-    }
-
-    return children;
-};
+// Lazy load pages for better performance
+const Home = lazy(() => import('@/pages/Home'));
+const Login = lazy(() => import('@/pages/Login'));
+const Register = lazy(() => import('@/pages/Register'));
+const Dashboard = lazy(() => import('@/pages/Dashboard'));
 
 function App() {
-    return (
-        <AuthProvider>
-            <Router>
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route 
-                        path="/login" 
-                        element={
-                            <PublicRoute>
-                                <Login />
-                            </PublicRoute>
-                        } 
-                    />
-                    <Route 
-                        path="/register" 
-                        element={
-                            <PublicRoute>
-                                <Register />
-                            </PublicRoute>
-                        } 
-                    />
-                    <Route 
-                        path="/dashboard" 
-                        element={
-                            <ProtectedRoute>
-                                <Dashboard />
-                            </ProtectedRoute>
-                        } 
-                    />
-                    <Route 
-                        path="/admin" 
-                        element={
-                            <ProtectedRoute allowedRoles={['admin']}>
-                                <Dashboard />
-                            </ProtectedRoute>
-                        } 
-                    />
-                </Routes>
-            </Router>
-        </AuthProvider>
-    );
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <div className="min-h-screen">
+          <Navbar />
+          <Suspense fallback={<LoadingSpinner fullScreen />}>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+
+              {/* Protected Routes */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/dashboard/*" element={<Dashboard />} />
+              </Route>
+
+              {/* Catch all */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: '#363636',
+                color: '#fff',
+              },
+              success: {
+                duration: 3000,
+                iconTheme: {
+                  primary: '#22c55e',
+                  secondary: '#fff',
+                },
+              },
+              error: {
+                duration: 4000,
+                iconTheme: {
+                  primary: '#ef4444',
+                  secondary: '#fff',
+                },
+              },
+            }}
+          />
+        </div>
+      </AuthProvider>
+    </BrowserRouter>
+  );
 }
 
 export default App;

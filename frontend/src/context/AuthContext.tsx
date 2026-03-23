@@ -1,149 +1,129 @@
-import { createContext, useEffect, useState, type ReactNode } from "react";
-import { type User, type AuthContextType } from "../types/user";
-import { 
-    getCurrentUser, 
-    loginRequest, 
-    logoutRequest, 
-    registerRequest 
-} from "../api/authApi";
-import axiosInstance from "../api/axios";
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { authApi } from '@/api/authApi';
+import { User, AuthContextType } from '@/types/user';
+import toast from 'react-hot-toast';
 
-export const AuthContext = createContext<AuthContextType | null>(null);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const isValidRole = (role: string): role is 'user' | 'admin' => {
-    return role === 'user' || role === 'admin';
-};
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+  const isAuthenticated = !!user;
 
-    useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                const token = localStorage.getItem('accessToken');
-                if (!token) {
-                    setLoading(false);
-                    return;
-                }
+  useEffect(() => {
+    const initAuth = async () => {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
 
-                const response = await getCurrentUser();
-                
-                if (response?.data) {
-                    const userData = response.data;
-                    // Validate the role
-                    if (userData && isValidRole(userData.role)) {
-                        setUser(userData as User);
-                    } else {
-                        console.error('Invalid user role:', userData?.role);
-                        localStorage.removeItem('accessToken');
-                        setUser(null);
-                    }
-                } else {
-                    setUser(null);
-                }
-            } catch (error) {
-                console.error("Auth check failed:", error);
-                localStorage.removeItem('accessToken');
-                setUser(null);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        checkAuth();
-    }, []);
-
-    const login = async (email: string, password: string) => {
-        setLoading(true);
-        setError(null);
-        try {
-            const response = await loginRequest(email, password);
-            
-            if (response?.data) {
-                const userData = response.data;
-                if (userData && isValidRole(userData.role)) {
-                    setUser(userData as User);
-                    return true;
-                } else {
-                    throw new Error('Invalid user role received from server');
-                }
-            } else {
-                throw new Error('No user data received');
-            }
-        } catch (error: any) {
-            setError(error.response?.data?.message || "Login Failed");
-            return false;
-        } finally {
-            setLoading(false);
-        }
+      try {
+        const response = await authApi.getCurrentUser();
+        setUser(response.data);
+      } catch (err) {
+        console.error('Auth check failed:', err);
+        localStorage.removeItem('accessToken');
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    const register = async (username: string, email: string, password: string) => {
-        setLoading(true);
-        setError(null);
-        try {
-            const response = await registerRequest(username, email, password);
-            
-            if (response?.data) {
-                const userData = response.data;
-                if (userData && isValidRole(userData.role)) {
-                    setUser(userData as User);
-                    return true;
-                } else {
-                    throw new Error('Invalid user role received from server');
-                }
-            } else {
-                throw new Error('No user data received');
-            }
-        } catch (error: any) {
-            setError(error.response?.data?.message || "Registration Failed");
-            return false;
-        } finally {
-            setLoading(false);
-        }
-    };
+    initAuth();
+  }, []);
 
-    const logout = async () => {
-        try {
-            await logoutRequest();
-            setUser(null);
-            localStorage.removeItem('accessToken');
-            // Clear any authorization headers
-            delete axiosInstance.defaults.headers.common['Authorization'];
-        } catch (error) {
-            console.error("Logout error:", error);
-        }
-    };
+  const login = async (email: string, password: string): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
 
-    const refreshUser = async () => {
-        try {
-            const response = await getCurrentUser();
-            if (response?.data) {
-                const userData = response.data;
-                if (userData && isValidRole(userData.role)) {
-                    setUser(userData as User);
-                }
-            }
-        } catch (error) {
-            console.error("Refresh user failed:", error);
-        }
-    };
+    try {
+      const response = await authApi.login(email, password);
+      const { user: userData, accessToken } = response.data;
 
-    const value: AuthContextType = {
+      if (accessToken) {
+        localStorage.setItem('accessToken', accessToken);
+      }
+
+      setUser(userData);
+      toast.success(`Welcome back, ${userData.username}!`);
+      return true;
+    } catch (err: any) {
+      const message = err.response?.data?.message || 'Login failed';
+      setError(message);
+      toast.error(message);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const register = async (username: string, email: string, password: string): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await authApi.register(username, email, password);
+      toast.success('Account created successfully! Please login.');
+      navigate('/login');
+      return true;
+    } catch (err: any) {
+      const message = err.response?.data?.message || 'Registration failed';
+      setError(message);
+      toast.error(message);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const logout = async (): Promise<void> => {
+    try {
+      await authApi.logout();
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      localStorage.removeItem('accessToken');
+      setUser(null);
+      toast.success('Logged out successfully');
+      navigate('/');
+    }
+  };
+
+  const refreshUser = async (): Promise<void> => {
+    try {
+      const response = await authApi.getCurrentUser();
+      setUser(response.data);
+    } catch (err) {
+      console.error('Refresh user failed:', err);
+    }
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{
         user,
+        isLoading,
+        isAuthenticated,
+        error,
         login,
         register,
         logout,
-        loading,
-        error,
-        refreshUser
-    };
+        refreshUser,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
 
-    return (
-        <AuthContext.Provider value={value}>
-            {children}
-        </AuthContext.Provider>
-    );
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };

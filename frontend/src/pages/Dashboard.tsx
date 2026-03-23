@@ -1,176 +1,128 @@
-import { useAuth } from '../hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import axiosInstance from '../api/axios';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Mail, Calendar, Activity, Crown } from 'lucide-react';
+import { getInitials, formatDate } from '@/lib/utils';
+import { ProfileSettings } from '@/components/dashboard/ProfileSetting';
+import { ActivityLog } from '@/components/dashboard/ActivityLog';
+import { DashboardStats } from '@/components/dashboard/StatsCard';
+import { UserManagement } from '@/components/dashboard/UserManagement';
 
-interface DashboardStats {
-    totalUsers?: number;
-    recentUsers?: User[];
-}
+const Dashboard: React.FC = () => {
+  const { user } = useAuth();
 
-interface User {
-    _id: string;
-    username: string;
-    email: string;
-    role: string;
-    createdAt: string;
-}
 
-const Dashboard = () => {
-    const { user, logout } = useAuth();
-    const navigate = useNavigate();
-    const [stats, setStats] = useState<DashboardStats | null>(null);
-    const [loading, setLoading] = useState(true);
+  const isAdmin = user?.role === 'admin';
 
-    useEffect(() => {
-        if (user?.role === 'admin') {
-            fetchAdminStats();
-        } else {
-            setLoading(false);
-        }
-    }, [user]);
-
-    const fetchAdminStats = async () => {
-        try {
-            const response = await axiosInstance.get('/admin/stats');
-            setStats(response.data.data);
-        } catch (error) {
-            console.error('Error fetching stats:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleLogout = async () => {
-        await logout();
-        navigate('/');
-    };
-
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-            </div>
-        );
-    }
-
+  // Admin Dashboard View
+  if (isAdmin) {
     return (
-        <div className="min-h-screen bg-gray-100">
-            {/* Navigation */}
-            <nav className="bg-white shadow-lg">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-16">
-                        <div className="flex items-center">
-                            <h1 className="text-2xl font-bold text-indigo-600">Dashboard</h1>
-                        </div>
-                        <div className="flex items-center space-x-4">
-                            <span className="text-gray-700">
-                                Welcome, {user?.username}
-                                {user?.role === 'admin' && (
-                                    <span className="ml-2 px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded-full">
-                                        Admin
-                                    </span>
-                                )}
-                            </span>
-                            <button
-                                onClick={handleLogout}
-                                className="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700"
-                            >
-                                Logout
-                            </button>
-                        </div>
-                    </div>
+      <div className="min-h-screen bg-linear-to-br from-primary-600 to-secondary-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            {/* Welcome Banner for Admin */}
+            <Card className="bg-linear-to-r from-primary-600 to-secondary-500 text-white border-0">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-2xl font-bold mb-2">Admin Dashboard 👋</h1>
+                    <p className="text-white/80">Welcome back, {user?.username}! Here's your admin overview.</p>
+                  </div>
+                  <Badge className="bg-white/20 text-white border-0">
+                    <Crown className="h-4 w-4 mr-1" />
+                    Administrator
+                  </Badge>
                 </div>
-            </nav>
+              </CardContent>
+            </Card>
 
-            {/* Main Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                    {/* User Info Cards */}
-                    <div className="bg-white overflow-hidden shadow rounded-lg">
-                        <div className="p-5">
-                            <div className="flex items-center">
-                                <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3">
-                                    <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
-                                </div>
-                                <div className="ml-5 w-0 flex-1">
-                                    <dl>
-                                        <dt className="text-sm font-medium text-gray-500 truncate">Username</dt>
-                                        <dd className="text-lg font-medium text-gray-900">{user?.username}</dd>
-                                    </dl>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white overflow-hidden shadow rounded-lg">
-                        <div className="p-5">
-                            <div className="flex items-center">
-                                <div className="flex-shrink-0 bg-green-500 rounded-md p-3">
-                                    <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                    </svg>
-                                </div>
-                                <div className="ml-5 w-0 flex-1">
-                                    <dl>
-                                        <dt className="text-sm font-medium text-gray-500 truncate">Email</dt>
-                                        <dd className="text-lg font-medium text-gray-900">{user?.email}</dd>
-                                    </dl>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white overflow-hidden shadow rounded-lg">
-                        <div className="p-5">
-                            <div className="flex items-center">
-                                <div className="flex-shrink-0 bg-purple-500 rounded-md p-3">
-                                    <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                </div>
-                                <div className="ml-5 w-0 flex-1">
-                                    <dl>
-                                        <dt className="text-sm font-medium text-gray-500 truncate">Member Since</dt>
-                                        <dd className="text-lg font-medium text-gray-900">
-                                            {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
-                                        </dd>
-                                    </dl>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Admin Section */}
-                {user?.role === 'admin' && stats && (
-                    <div className="mt-8">
-                        <h2 className="text-lg font-medium text-gray-900 mb-4">Admin Overview</h2>
-                        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                            <div className="px-4 py-5 sm:p-6">
-                                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                                    <div className="bg-indigo-50 rounded-lg p-5">
-                                        <dt className="text-sm font-medium text-indigo-600 truncate">Total Users</dt>
-                                        <dd className="mt-1 text-3xl font-semibold text-indigo-900">
-                                            {stats.totalUsers || 0}
-                                        </dd>
-                                    </div>
-                                    <div className="bg-green-50 rounded-lg p-5">
-                                        <dt className="text-sm font-medium text-green-600 truncate">Active Users</dt>
-                                        <dd className="mt-1 text-3xl font-semibold text-green-900">
-                                            {stats.recentUsers?.length || 0}
-                                        </dd>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
+            {/* Admin Stats */}
+            <DashboardStats />
+            
+            {/* User Management Table */}
+            <UserManagement />
+          </motion.div>
         </div>
+      </div>
     );
+  }
+
+  // Regular User Dashboard View
+  return (
+    <div className="min-h-screen bg-linear-to-br from-primary-600 to-secondary-500">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-6"
+        >
+          {/* Welcome Banner */}
+          <Card className="bg-linear-to-r from-primary-600 to-secondary-500 text-white border-0">
+            <CardContent className="p-6">
+              <h1 className="text-2xl font-bold mb-2">Welcome back, {user?.username}! 👋</h1>
+              <p className="text-white/80">Here's what's happening with your account today.</p>
+            </CardContent>
+          </Card>
+
+          {/* User Profile Card */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="lg:col-span-1 bg-white/95 backdrop-blur-sm border-white/20">
+              <CardHeader className="text-center">
+                <Avatar className="h-24 w-24 mx-auto bg-linear-to-r from-primary-600 to-secondary-500">
+                  <AvatarFallback className="text-white text-2xl">
+                    {user?.username ? getInitials(user.username) : 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <CardTitle className="mt-4">{user?.username}</CardTitle>
+                <CardDescription>{user?.email}</CardDescription>
+                <Badge variant="outline" className="w-fit mx-auto mt-2">
+                  {user?.role === 'admin' && <Crown className="h-3 w-3 mr-1" />}
+                  {user?.role}
+                </Badge>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center space-x-3 text-sm text-gray-600">
+                  <Mail className="h-4 w-4" />
+                  <span>{user?.email}</span>
+                </div>
+                {user?.lastLogin && (
+                  <div className="flex items-center space-x-3 text-sm text-gray-600">
+                    <Calendar className="h-4 w-4" />
+                    <span>Last login: {formatDate(user.lastLogin)}</span>
+                  </div>
+                )}
+                <div className="flex items-center space-x-3 text-sm text-gray-600">
+                  <Activity className="h-4 w-4" />
+                  <span>Member since: {user?.createdAt ? formatDate(user.createdAt) : 'N/A'}</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Settings Card */}
+            <Card className="lg:col-span-2 bg-white/95 backdrop-blur-sm border-white/20">
+              <CardHeader>
+                <CardTitle>Account Settings</CardTitle>
+                <CardDescription>Manage your profile information</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ProfileSettings />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Activity Log */}
+          <ActivityLog />
+        </motion.div>
+      </div>
+    </div>
+  );
 };
 
 export default Dashboard;

@@ -1,59 +1,65 @@
-import axiosInstance from "./axios";
+import axiosInstance from './axios';
+import { User, AuthResponse, ApiError } from '@/types/user';
 
-export interface LoginResponse {
-    success: boolean;
-    accessToken: string;
-    data: {
-        _id: string;
-        username: string;
-        email: string;
-        role: string;
-        createdAt: string;
-        updatedAt: string;
-    };
-}
+export const authApi = {
+    // Auth endpoints (from auth.routes.js)
+    register: async (username: string, email: string, password: string) => {
+        const response = await axiosInstance.post<AuthResponse>('/auth/register', {
+            username,
+            email,
+            password
+        });
+        return response.data;
+    },
 
-export const loginRequest = async (email: string, password: string) => {
-    const { data } = await axiosInstance.post<LoginResponse>("/auth/login", {
-        email,
-        password
-    });
-    
-    if (data.accessToken) {
-        localStorage.setItem('accessToken', data.accessToken);
+    login: async (email: string, password: string) => {
+        const response = await axiosInstance.post<AuthResponse>('/auth/login', {
+            email,
+            password
+        });
+        return response.data;
+    },
+
+    logout: async () => {
+        const response = await axiosInstance.post('/auth/logout');
+        return response.data;
+    },
+
+    getCurrentUser: async () => {
+        const response = await axiosInstance.get<{ data: User }>('/auth/me');
+        return response.data;
+    },
+
+    getDashboard: async () => {
+        const response = await axiosInstance.get('/auth/dashboard');
+        return response.data;
     }
-    
-    return data;
 };
 
-export const registerRequest = async (username: string, email: string, password: string) => {
-    const { data } = await axiosInstance.post<LoginResponse>("/auth/register", {
-        username,
-        email,
-        password
-    });
-    
-    if (data.accessToken) {
-        localStorage.setItem('accessToken', data.accessToken);
+// Admin API (from role.routes.js)
+export const adminApi = {
+    getAllUsers: async () => {
+        const response = await axiosInstance.get<{ data: User[] }>('/admin/users');
+        return response.data;
+    },
+
+    getUserById: async (userId: string) => {
+        const response = await axiosInstance.get<{ data: User }>(`/admin/users/${userId}`);
+        return response.data;
+    },
+
+    deleteUser: async (userId: string) => {
+        const response = await axiosInstance.delete(`/admin/users/${userId}`);
+        return response.data;
+    },
+
+    changeUserRole: async (userId: string, role: 'user' | 'admin') => {
+        const response = await axiosInstance.patch(`/admin/users/${userId}/role`, { role });
+        return response.data;
+    },
+
+    getDashboardStats: async () => {
+        const response = await axiosInstance.get('/admin/stats');
+        return response.data;
     }
-    
-    return data;
-};
-
-export const logoutRequest = async () => {
-    await axiosInstance.post("/auth/logout");
-    localStorage.removeItem('accessToken');
-};
-
-export const getCurrentUser = async () => {
-    const { data } = await axiosInstance.get("/auth/me");
-    return data;
-};
-
-export const refreshTokenRequest = async () => {
-    const { data } = await axiosInstance.post("/auth/refresh-token");
-    if (data.accessToken) {
-        localStorage.setItem('accessToken', data.accessToken);
-    }
-    return data;
 };
