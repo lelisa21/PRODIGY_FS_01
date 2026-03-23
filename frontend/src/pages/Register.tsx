@@ -106,7 +106,7 @@ const Register: React.FC = () => {
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-primary-600 to-secondary-500 hover:opacity-90"
+                className="my-4 p-5 w-full bg-linear-to-r from-primary-600 to-secondary-500 hover:opacity-90"
                 disabled={isLoading}
               >
                 {isLoading ? (

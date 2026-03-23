@@ -18,10 +18,8 @@ export interface User {
 export interface AuthResponse {
   success: boolean;
   message: string;
-  data: {
-    user: User;
-    accessToken?: string;
-  };
+  accessToken?: string;
+  data:  User;
 }
 
 export interface ApiError {

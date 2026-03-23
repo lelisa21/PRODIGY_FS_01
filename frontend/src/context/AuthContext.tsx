@@ -42,8 +42,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       const response = await authApi.login(email, password);
-      const { user: userData, accessToken } = response.data;
-
+      const {accessToken, data: userData,} = response;
+     console.log(response.data)
       if (accessToken) {
         localStorage.setItem('accessToken', accessToken);
       }
