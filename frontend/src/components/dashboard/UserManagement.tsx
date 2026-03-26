@@ -32,7 +32,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Search, MoreVertical, Trash2, Shield, ShieldOff, Crown, Loader2 } from 'lucide-react';
-import { adminApi } from '@/api/adminApi';
+import { adminApi } from '@/api/authApi';
 import { useAuth } from '@/hooks/useAuth';
 import { getInitials, formatDate } from '@/lib/utils';
 import { User } from '@/types/user';

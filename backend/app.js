@@ -24,6 +24,6 @@ app.use(limiter)
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", roleRoutes)
-app.use("api/user" , userRoutes)
+app.use("/api/user" , userRoutes)
 
 export default app

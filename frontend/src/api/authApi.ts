@@ -1,8 +1,7 @@
 import axiosInstance from './axios';
-import { User, AuthResponse } from '@/types/user';
+import { User, AuthResponse,DashboardStats,UsersListResponse } from '@/types/user';
 
 export const authApi = {
-    // Auth endpoints (from auth.routes.js)
     register: async (username: string, email: string, password: string) => {
         const response = await axiosInstance.post<AuthResponse>('/auth/register', {
             username,
@@ -36,11 +35,10 @@ export const authApi = {
     }
 };
 
-// Admin API (from role.routes.js)
 export const adminApi = {
     getAllUsers: async () => {
-        const response = await axiosInstance.get<{ data: User[] }>('/admin/users');
-        return response.data;
+        const response = await axiosInstance.get<UsersListResponse>('/admin/users');
+        return response.data;  
     },
 
     getUserById: async (userId: string) => {
@@ -59,7 +57,7 @@ export const adminApi = {
     },
 
     getDashboardStats: async () => {
-        const response = await axiosInstance.get('/admin/stats');
+        const response = await axiosInstance.get<{ data: DashboardStats }>('/admin/stats');
         return response.data;
     }
 };

@@ -22,7 +22,7 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-600 to-secondary-500 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-primary-600 to-secondary-500 p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Shield, TrendingUp, UserCheck, UserX } from 'lucide-react';
-import { adminApi } from '@/api/adminApi';
+import { adminApi } from '@/api/authApi';
 import { DashboardStats as StatsType } from '@/types/user';
 
 export const DashboardStats: React.FC = () => {
@@ -41,35 +41,35 @@ export const DashboardStats: React.FC = () => {
   if (!stats) return null;
 
   const statCards = [
-    {
-      title: 'Total Users',
-      value: stats.totalUsers,
-      icon: Users,
-      description: `+${stats.userGrowth}% from last month`,
-      color: 'from-blue-500 to-cyan-500',
-    },
-    {
-      title: 'Active Users',
-      value: stats.activeUsers,
-      icon: UserCheck,
-      description: `${((stats.activeUsers / stats.totalUsers) * 100).toFixed(1)}% of total`,
-      color: 'from-green-500 to-emerald-500',
-    },
-    {
-      title: 'Admins',
-      value: stats.roleDistribution.admin,
-      icon: Shield,
-      description: `${((stats.roleDistribution.admin / stats.totalUsers) * 100).toFixed(1)}% of users`,
-      color: 'from-purple-500 to-pink-500',
-    },
-    {
-      title: 'Regular Users',
-      value: stats.roleDistribution.user,
-      icon: UserX,
-      description: 'Active community members',
-      color: 'from-orange-500 to-red-500',
-    },
-  ];
+  {
+    title: 'Total Users',
+    value: stats.totalUsers,
+    icon: Users,
+    description: `+${stats.userGrowth}% from last month`,
+    color: 'from-indigo-500 via-blue-500 to-cyan-400', 
+  },
+  {
+    title: 'Active Users',
+    value: stats.activeUsers,
+    icon: UserCheck,
+    description: `${((stats.activeUsers / stats.totalUsers) * 100).toFixed(1)}% of total`,
+    color: 'from-emerald-500 via-teal-500 to-cyan-400', 
+  },
+  {
+    title: 'Admins',
+    value: stats.roleDistribution.admin,
+    icon: Shield,
+    description: `${((stats.roleDistribution.admin / stats.totalUsers) * 100).toFixed(1)}% of users`,
+    color: 'from-violet-500 via-purple-500 to-fuchsia-400',  
+  },
+  {
+    title: 'Regular Users',
+    value: stats.roleDistribution.user,
+    icon: UserX,
+    description: 'Active community members',
+    color: 'from-amber-500 via-orange-500 to-rose-400',  // Warm, engaging orange-rose (friendly community vibe)
+  },
+];
 
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">

@@ -55,7 +55,7 @@ const Dashboard: React.FC = () => {
   // Regular User Dashboard View
   return (
     <div className="bg-linear-to-r from-primary-600 to-secondary-500 border-0 top-0">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-xl lg:max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
