@@ -1,5 +1,5 @@
 import axiosInstance from './axios';
-import { User, AuthResponse, ApiError } from '@/types/user';
+import { User, AuthResponse } from '@/types/user';
 
 export const authApi = {
     // Auth endpoints (from auth.routes.js)

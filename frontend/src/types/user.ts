@@ -66,3 +66,14 @@ export interface AuthContextType {
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
+
+export interface UsersListResponse {
+    success: boolean;
+    users: User[];
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        pages: number;
+    };
+}

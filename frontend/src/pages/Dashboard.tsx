@@ -20,22 +20,20 @@ const Dashboard: React.FC = () => {
   // Admin Dashboard View
   if (isAdmin) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-primary-600 to-secondary-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="min-h-screen bg-[#215467]">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
           >
-            {/* Welcome Banner for Admin */}
-            <Card className="bg-linear-to-r from-primary-600 to-secondary-500 text-white border-0">
-              <CardContent className="p-6">
+            <Card className="bg-linear-to-r from-primary-600 to-secondary-500 border-0 top-0">
+              <CardContent className="px-5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h1 className="text-2xl font-bold mb-2">Admin Dashboard 👋</h1>
-                    <p className="text-white/80">Welcome back, {user?.username}! Here's your admin overview.</p>
+                    <p className="text-2xl text-cyan-950">Welcome back {user?.username}! Here's your admin overview.</p>
                   </div>
-                  <Badge className="bg-white/20 text-white border-0">
+                  <Badge className=" border-0">
                     <Crown className="h-4 w-4 mr-1" />
                     Administrator
                   </Badge>
@@ -56,18 +54,17 @@ const Dashboard: React.FC = () => {
 
   // Regular User Dashboard View
   return (
-    <div className="min-h-screen bg-linear-to-br from-primary-600 to-secondary-500">
+    <div className="bg-linear-to-r from-primary-600 to-secondary-500 border-0 top-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="space-y-6"
         >
-          {/* Welcome Banner */}
-          <Card className="bg-linear-to-r from-primary-600 to-secondary-500 text-white border-0">
-            <CardContent className="p-6">
-              <h1 className="text-2xl font-bold mb-2">Welcome back, {user?.username}! 👋</h1>
-              <p className="text-white/80">Here's what's happening with your account today.</p>
+        
+          <Card className="bg-linear-to-r from-primary-600 to-secondary-500  border-0">
+            <CardContent className="p-2">
+              <h1 className="text-2xl font-bold mb-2">Welcome back {user?.username}!</h1>
             </CardContent>
           </Card>
 
@@ -76,11 +73,11 @@ const Dashboard: React.FC = () => {
             <Card className="lg:col-span-1 bg-white/95 backdrop-blur-sm border-white/20">
               <CardHeader className="text-center">
                 <Avatar className="h-24 w-24 mx-auto bg-linear-to-r from-primary-600 to-secondary-500">
-                  <AvatarFallback className="text-white text-2xl">
+                  <AvatarFallback className=" text-2xl">
                     {user?.username ? getInitials(user.username) : 'U'}
                   </AvatarFallback>
                 </Avatar>
-                <CardTitle className="mt-4">{user?.username}</CardTitle>
+                <CardTitle className="mt-4 bg-amber-900/56">{user?.username}</CardTitle>
                 <CardDescription>{user?.email}</CardDescription>
                 <Badge variant="outline" className="w-fit mx-auto mt-2">
                   {user?.role === 'admin' && <Crown className="h-3 w-3 mr-1" />}

@@ -51,9 +51,9 @@ const Home: React.FC = () => {
           transition={{ duration: 0.6 }}
           className="text-center"
         >
-          <h1 className="text-5xl md:text-7xl font-extrabold text-white/25 mb-6">
-            Secure Authentication
-            <span className="block text-primary-900">Made Simple</span>
+          <h1 className="text-5xl md:text-7xl font-extrabold text-white/55 mb-6">
+           Verify with Confidence. 
+            <span className="block text-primary-900">Scale with Security.</span>
           </h1>
           <p className="text-xl text-white/90 max-w-3xl mx-auto mb-8">
             A modern authentication system with JWT tokens, refresh tokens, role-based access, 
@@ -104,7 +104,7 @@ const Home: React.FC = () => {
       className="group perspective"
     >
       <div className="relative transform-gpu transition-transform duration-500 group-hover:rotate-x-6 group-hover:rotate-y-6 group-hover:scale-105">
-        <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-8 shadow-xl border border-gray-100">
+        <div className="bg-linear-to-br from-white to-gray-50 rounded-xl p-8 shadow-xl border border-gray-100">
           <div className="flex flex-col items-center text-center">
             <h3 className="text-lg font-bold text-gray-800 mb-2">{feature.title}</h3>
             <p className="text-gray-600 text-sm">{feature.description}</p>

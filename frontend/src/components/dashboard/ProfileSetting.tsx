@@ -111,7 +111,7 @@ export const ProfileSettings: React.FC = () => {
       <Button
         type="submit"
         disabled={loading}
-        className="w-full md:w-auto bg-gradient-to-r from-primary-600 to-secondary-500"
+        className="w-full md:w-auto bg-linear-to-r from-primary-600 to-secondary-500"
       >
         {loading ? (
           <>

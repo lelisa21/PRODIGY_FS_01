@@ -24,7 +24,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
 
   if (fullScreen) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-600 to-secondary-500">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-primary-600 to-secondary-500">
         {spinner}
       </div>
     );

@@ -87,7 +87,7 @@ export const DashboardStats: React.FC = () => {
                 <CardTitle className="text-sm font-medium text-gray-600">
                   {stat.title}
                 </CardTitle>
-                <div className={`p-2 rounded-lg bg-gradient-to-r ${stat.color}`}>
+                <div className={`p-2 rounded-lg bg-linear-to-r ${stat.color}`}>
                   <Icon className="h-4 w-4 text-white" />
                 </div>
               </CardHeader>

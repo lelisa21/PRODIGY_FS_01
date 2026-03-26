@@ -2,14 +2,13 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import User from "../models/user.model.js";
 import AppError from "../utils/appError.js";
+import activityService from "./activity.service.js";
 
 class AuthService {
     constructor() {
-        // In production, use Redis for refresh tokens
         this.refreshTokens = new Map();
     }
 
-    // Generate tokens
     generateTokens(userId, role) {
         const accessToken = jwt.sign(
             { id: userId, role },
@@ -23,7 +22,6 @@ class AuthService {
             { expiresIn: process.env.REFRESH_TOKEN_EXPIRY || '7d' }
         );
 
-        // Store refresh token
         this.refreshTokens.set(refreshToken, {
             userId,
             role,
@@ -33,7 +31,6 @@ class AuthService {
         return { accessToken, refreshToken };
     }
 
-    // Register new user
     async register(userData) {
         const { username, email, password } = userData;
         
@@ -54,6 +51,11 @@ class AuthService {
 
         const tokens = this.generateTokens(user._id, user.role);
         
+           await activityService.logActivity(
+          user._id, 
+          'register', 
+          `User registered with email ${email}`
+);
         const userObject = user.toObject();
         delete userObject.password;
 
@@ -63,10 +65,13 @@ class AuthService {
         };
     }
 
+ 
     // Login user
     async login(email, password) {
+        try {
+         console.log("1. Login attempt for:", email);
         const user = await User.findOne({ email }).select('+password');
-        
+         console.log("2. User found:", user ? "Yes" : "No");
         if (!user) {
             throw new AppError("Invalid credentials", 401);
         }
@@ -88,11 +93,19 @@ class AuthService {
         
         const userObject = user.toObject();
         delete userObject.password;
-
+        await activityService.logActivity(
+        user._id, 
+        'login', 
+         `User logged in from ${new Date().toLocaleString()}`
+);
         return {
             user: userObject,
             ...tokens
         };
+        } catch (error) {
+            console.log("Login error details:", error.message);
+           throw new AppError(error.message || "error on login" , 401)  
+        }
     }
 
     // Refresh access token

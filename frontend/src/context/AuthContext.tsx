@@ -50,6 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       setUser(userData);
       toast.success(`Welcome back, ${userData.username}!`);
+      console.log("user logged in successfully")
       return true;
     } catch (err: any) {
       const message = err.response?.data?.message || 'Login failed please try with correct email and  password';

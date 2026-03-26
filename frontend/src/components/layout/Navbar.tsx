@@ -40,7 +40,7 @@ export const Navbar: React.FC = () => {
             {isAuthenticated ? (
               <>
                 <Link to="/dashboard">
-                  <Button variant="ghost" className="hidden md:inline-flex">
+                  <Button variant="ghost" className="hidden bg-[#b79453] md:inline-flex">
                     Dashboard
                   </Button>
                 </Link>
@@ -48,8 +48,8 @@ export const Navbar: React.FC = () => {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                      <Avatar className="h-8 w-8 bg-linear-to-r from-primary-600 to-secondary-500">
-                        <AvatarFallback className="text-white text-xs">
+                      <Avatar className="h-8 w-8 ">
+                        <AvatarFallback className="text-white bg-[#f4ca4c] text-xs">
                           {user?.username ? getInitials(user.username) : 'U'}
                         </AvatarFallback>
                       </Avatar>

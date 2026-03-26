@@ -1,7 +1,7 @@
 import express from "express"
 import authRoutes from "./routes/auth.routes.js"
 import roleRoutes from "./routes/role.routes.js"
-
+import userRoutes from "./routes/user.routes.js"
 import rateLimit from "express-rate-limit"
 
 import cors from "cors"
@@ -24,5 +24,6 @@ app.use(limiter)
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", roleRoutes)
+app.use("api/user" , userRoutes)
 
 export default app

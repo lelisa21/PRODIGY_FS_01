@@ -54,15 +54,32 @@ export const UserManagement: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await adminApi.getAllUsers();
-      setUsers(response.data);
+        const response = await adminApi.getAllUsers();
+        // Check the response structure
+        console.log("API Response:", response);
+        
+        // If response has users array, use it
+        if (response.users) {
+            setUsers(response.users);
+        } 
+        // If response has data array, use that
+        else if (response.users && Array.isArray(response.users)) {
+            setUsers(response.users);
+        }
+        // If response itself is array
+        else if (Array.isArray(response)) {
+            setUsers(response);
+        }
+        else {
+            setUsers([]);
+        }
     } catch (error) {
-      console.error('Error fetching users:', error);
-      toast.error('Failed to fetch users');
+        console.error('Error fetching users:', error);
+        toast.error('Failed to fetch users');
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
 
   const handleDeleteUser = async (userId: string) => {
     setActionLoading(true);
@@ -109,6 +126,8 @@ export const UserManagement: React.FC = () => {
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  console.log('Users:', users)
+
   if (loading) {
     return (
       <Card className="bg-white/95 backdrop-blur-sm border-white/20">
@@ -152,7 +171,7 @@ export const UserManagement: React.FC = () => {
                   <TableHead>Role</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Joined</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
+                  <TableHead className="w-12.5"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -160,7 +179,7 @@ export const UserManagement: React.FC = () => {
                   <TableRow key={user._id}>
                     <TableCell className="font-medium">
                       <div className="flex items-center space-x-3">
-                        <Avatar className="h-8 w-8 bg-gradient-to-r from-primary-600 to-secondary-500">
+                        <Avatar className="h-8 w-8 bg-linear-to-r from-primary-600 to-secondary-500">
                           <AvatarFallback className="text-white text-xs">
                             {getInitials(user.username)}
                           </AvatarFallback>

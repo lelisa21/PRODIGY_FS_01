@@ -1,4 +1,3 @@
-// src/components/dashboard/ActivityLog.tsx
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -83,7 +82,7 @@ export const ActivityLog: React.FC = () => {
               key={activity._id}
               className="flex items-start space-x-4 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
             >
-              <Avatar className="h-10 w-10 bg-gradient-to-r from-primary-600 to-secondary-500">
+              <Avatar className="h-10 w-10 bg-linear-to-r from-primary-600 to-secondary-500">
                 <AvatarFallback className="text-white">
                   {activity.user?.username ? getInitials(activity.user.username) : 'U'}
                 </AvatarFallback>
